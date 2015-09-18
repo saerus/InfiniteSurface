@@ -1,72 +1,56 @@
-// HTTP Portion
-var http = require('http');
-// URL module
-var url = require('url');
-var path = require('path');
-// Using the filesystem module
-var fs = require('fs');
+ var express = require("express");
+ var app = express();
 
-var server = http.createServer(handleRequest);
-server.listen(8080);
+ /* serves main page */
+ app.get("/", function(req, res) {
+    res.sendFile(__dirname+'/client.html')
+ });
+  app.get("/webcam", function(req, res) {
+    res.sendFile(__dirname+'/webcam.html')
+ });
 
-console.log('Server started on port 8080');
+ /* serves all the static files */
+ app.get(/^(.+)$/, function(req, res){ 
+     console.log('static file request : ' + req.params);
+     res.sendFile( __dirname + req.params[0]); 
+ });
 
-function handleRequest(req, res) {
-  // What did we request?
-  var pathname = req.url;
-  
-  // If blank let's ask for index.html
-  if (pathname == '/') {
-    pathname = '/index.html';
-  }
-  
-  // Ok what's our file extension
-  var ext = path.extname(pathname);
+ var port = process.env.PORT || 8080;
+var server = app.listen(port, function() {
+   console.log("Listening on " + port);
+ });
 
-  // Map extension to file type
-  var typeExt = {
-    '.html': 'text/html',
-    '.js':   'text/javascript',
-    '.css':  'text/css'
-  };
-
-  // What is it?  Default to plain text
-  var contentType = typeExt[ext] || 'text/plain';
-
-  // User file system module
-  fs.readFile(__dirname + pathname,
-    // Callback function for reading
-    function (err, data) {
-      // if there is an error
-      if (err) {
-        res.writeHead(500);
-        return res.end('Error loading ' + pathname);
-      }
-      // Otherwise, send the data, the contents of the file
-      res.writeHead(200,{ 'Content-Type': contentType });
-      res.end(data);
-    }
-  );
-}
-// WebSocket Portion
-// WebSockets work with the HTTP server
-var io = require('socket.io').listen(server);
-
-// Register a callback function to run when we have an individual connection
-// This is run for each individual user that connects
-io.sockets.on('connection',
+ var io = require('socket.io').listen(server);
+ 
+ io.sockets.on('connection',
   // We are given a websocket object in our function
+  
   function (socket) {
     console.log("We have a new client: " +socket.id);
 	io.sockets.connected[socket.id].emit("youare", socket.id);
     // When this user emits, client side: socket.emit('otherevent',some data);
     socket.on('gimmeclientlist',
       function(data) {
-      	var clientlist = Object.keys(io.engine.clients);
-      	console.log("Send this: "+clientlist+" to: "+socket.id);
-        io.sockets.connected[socket.id].emit('clientlist', clientlist);
+      	var clientlist = io.sockets.adapter.rooms['slave'];
+      	if(clientlist) {
+      		console.log("Send this: "+Object.keys(clientlist)+" to: "+socket.id);
+        	io.sockets.connected[socket.id].emit('clientlist', Object.keys(clientlist));
+      	}
+      	//var clientlist = io.sockets.clients("slave");
       }
     );
+    socket.on('joinroom',
+    	function(data) {
+    	socket.join(data);
+    	console.log("Joined room: "+data);
+    	//
+    	/*
+    	var clientsnbr = io.engine.clientsCount;
+  		io.sockets.in('master').emit('nbr', clientsnbr);
+    	console.log("Donne le nbr de clients: " +clientsnbr);
+    	*/
+	  }
+	);
     socket.on('blink',
     	function(data) {
     	console.log("Blink: "+data);
@@ -81,14 +65,8 @@ io.sockets.on('connection',
 	);
 	socket.on('unblink',
     	function(data) {
-    	console.log("Un-Blink: "+data.who);
+    	console.log("Un-Blink: "+data.x+" "+data.y);
     	io.sockets.connected[data.who].emit('unblink', data);
-	  }
-	);
-	socket.on('unblinkall',
-    	function(data) {
-    	console.log("Un-Blink: ");
-    	io.sockets.emit('unblinkall');
 	  }
 	);
     socket.on('disconnect',
@@ -96,8 +74,5 @@ io.sockets.on('connection',
     	console.log("Client has disconnected");
 	  }
 	);
-  	var clientsnbr = io.engine.clientsCount;
-  	io.sockets.emit('nbr', clientsnbr);
-    console.log("Donne le nbr de clients: " +clientsnbr);
   }
 );
