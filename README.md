@@ -6,8 +6,7 @@ Workshop from fragmentin
 - http://p5js.org/
 
 ### Material:
-Your smartphone !
+- Your smartphone !
 
 See ya
-
 fragment.in
