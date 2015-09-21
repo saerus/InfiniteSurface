@@ -1,11 +1,11 @@
 # InfiniteSurface
 Workshop from fragmentin
 
-Prerequisites:
-https://nodejs.org/en/
-http://p5js.org/
+### Prerequisites:
+- https://nodejs.org/en/
+- http://p5js.org/
 
-Material:
+### Material:
 Your smartphone !
 
 See ya
