@@ -17,7 +17,7 @@ var routine = 0;
 var iam;
 var clientlist;
 var waitfor = 0;
-var t = 50;
+var t = 200;
 //
 var pg;
 //
@@ -47,7 +47,17 @@ function setup() {
   );
   socket.on('imdetectable',
     function(data) {
-      
+      if(clientlist[currentClient] == data) {
+        state = 1;
+      }
+    }
+  );
+  socket.on('ivebeendetected',
+    function(data) {
+      if(clientlist[currentClient] == data) {
+        state = 0;
+        nextClient();
+      }
     }
   );
 }
@@ -61,8 +71,7 @@ function launchDetection() {
 function nextClient() {
   currentClient++;
   if (currentClient < clientlist.length) {
-    state = 1;
-    waitfor = 0;
+    state = 0;
     socket.emit('blink', clientlist[currentClient]);
     //print("BLINK: " + clientlist[currentClient]);
   } else {
@@ -77,6 +86,7 @@ function mousePressed() {
 function draw() {
     background(255, 0, 0);
     image(capture, 0, 0, 320, 240);
+
     loadPixels();
     pos = createVector(0, 0);
     nbr = 0;
@@ -103,7 +113,7 @@ function draw() {
     updatePixels();
     fill(0);
     ellipse(pos.x, pos.y, 10, 10);
-    if (state == 1 && waitfor >= t) {
+    if (state == 1) {
       if (nbr > 100) {
         var data = {
           x: (pos.x / width),
@@ -111,29 +121,41 @@ function draw() {
           who: clientlist[currentClient]
         }
         socket.emit('unblink', data);
-        print("UN-BLINK: X: " + pos.x + " Y: " + pos.y + " to: " + clientlist[currentClient]);
+        //print("UN-BLINK: X: " + pos.x + " Y: " + pos.y + " to: " + clientlist[currentClient]);
         append(ones, new One(pos.x, pos.y, clientlist[currentClient]));
         print(ones.length);
-        state = 0;
-        nextClient();
+        state = 2;
+        waitfor = 200;
       }
-    } else {
-      waitfor++;
     }
-    routine += 1;
+    if(state == 2) {
+    	if(waitfor > 0) {
+    		waitfor --;
+    	} else {
+    		state = 0;
+        	nextClient();
+    	}
+    }
+    /*routine += 1;
     if (routine == 100) {
       routine = 0;
-    }
-    for (var i = 0; i < ones.length; i++) {
-      ones[i].test(routine);
-    }
+    }*/
+    
     //print(routine);
     stroke(255);
-    line(routine / 100 * width, 0, routine / 100 * width, height);
+    //line(routine / 100 * width, 0, routine / 100 * width, height);
     noStroke();
     fill(255);
     if (clientlist) {
-      text(clientlist.length, 10, 10);
+      text(clientlist.length+" / "+state+"     "+width, 10, 10);
+      /*for (var i = 0; i < ones.length; i++) {
+        ones[i].emit();
+      }*/
+      var data = {
+        x: (pos.x / width),
+        y: (pos.y / height)
+      }
+      socket.emit('updatepos', data);
     }
   }
   // CLASS ONE
@@ -143,7 +165,6 @@ function One(_x, _y, _who) {
   this.who = _who;
   //
   this.emit = function() {
-
   }
   this.test = function(_i) {
     if (this.x == _i) {

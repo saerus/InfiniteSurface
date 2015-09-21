@@ -54,13 +54,31 @@ var server = app.listen(port, function() {
     socket.on('blink',
     	function(data) {
     	console.log("Blink: "+data);
-    	io.sockets.connected[data].emit('blink');
+    	io.sockets.connected[data].emit('blink', data);
+	  }
+	);
+	socket.on('imdetectable',
+    	function(data) {
+    		console.log("I'm detectable: "+data);
+    		io.sockets.in("master").emit('imdetectable', data);
+	  }
+	);
+	socket.on('ivebeendetected',
+    	function(data) {
+    		console.log("I've been detected: "+data);
+    		io.sockets.in("master").emit('ivebeendetected', data);
 	  }
 	);
 	socket.on('blinktemp',
     	function(data) {
     	console.log("Blink TEMP: "+data);
     	io.sockets.connected[data].emit('blinktemp');
+	  }
+	);
+	socket.on('updatepos',
+    	function(data) {
+    	//console.log("updatepos: "+data);
+    	io.sockets.in("slave").emit('updatepos', data);
 	  }
 	);
 	socket.on('unblink',
