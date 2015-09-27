@@ -11,11 +11,11 @@
 
  /* serves all the static files */
  app.get(/^(.+)$/, function(req, res){ 
-     console.log('static file request : ' + req.params);
+     //console.log('static file request : ' + req.params);
      res.sendFile( __dirname + req.params[0]); 
  });
 
- var port = process.env.PORT || 8080;
+ var port = process.env.PORT || 4242;
 var server = app.listen(port, function() {
    console.log("Listening on " + port);
  });
@@ -73,6 +73,12 @@ var server = app.listen(port, function() {
     	function(data) {
     	console.log("Blink TEMP: "+data);
     	io.sockets.connected[data].emit('blinktemp');
+	  }
+	);
+	socket.on('changecolor',
+    	function(data) {
+    	console.log("Change Color: "+data.r+" "+data.g+" "+data.b);
+    	io.sockets.connected[data.who].emit('changecolor', data);
 	  }
 	);
 	socket.on('updatepos',

@@ -7,6 +7,7 @@ var mypos;
 var pos;
 var posDiff;
 var lngth;
+var mycolor;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -15,12 +16,13 @@ function setup() {
   mypos = createVector(0, 0);
   pos = createVector(0, 0);
   posDiff = createVector(0, 0);
+  mycolor = createVector(0, 0, 0);
   
   img = loadImage("haha.png"); 
   //capture = createVideo(["cave.mp4", "cave.ogv", "cave.webm"]); // ["/a.mov"]
   //capture.size(320, 240);
   //capture.hide();
-  socket = io.connect('192.168.130.204:8080');
+  socket = io.connect('10.30.67.79:4242');
   socket.emit('joinroom', "slave");
   socket.on('blink',
     function(data) {
@@ -42,6 +44,14 @@ function setup() {
       val = 1;
     }
   );
+  socket.on('changecolor',
+    function(data) {
+      //
+      mycolor.x = float(data.r);
+      mycolor.y = float(data.g);
+      mycolor.z = float(data.b);
+    }
+  );
   socket.on('updatepos',
     function(data) {
       //
@@ -60,7 +70,7 @@ function mousePressed() {
 function draw() {
   
     background(0);
-    background(255*val, 255*val, 255*val);
+    //background(floor(mycolor.x), floor(mycolor.y), floor(mycolor.z));
     var m = 2;
     //image(img, -pos.x*img.width*m, -pos.y*img.height*m, img.width*m, img.height*m);
   
@@ -70,7 +80,7 @@ function draw() {
   //image(capture, 0, 0, 320, 240);
   noStroke();
   fill(255, 0, 0);
-  text("CLIENT"+mypos.x+" / "+mypos.y+"    "+width, 10, 10);
+  //text("CLIENT"+mypos.x+" / "+mypos.y+"    "+width, 10, 10);
   // REPLACE EVERYTHING FOR DETECTION
   if(detect) {
     background(0, 0, 255);
