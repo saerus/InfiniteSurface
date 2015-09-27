@@ -30,6 +30,15 @@ function setup() {
       socket.emit('imdetectable', data);
     }
   );
+  socket.on('reset',
+    function(data) {
+      detect = false;
+      //
+      mycolor.x = 0;
+      mycolor.y = 0;
+      mycolor.z = 0;
+    }
+  );
   socket.on('unblink',
     function(data) {
       detect = false;
@@ -70,7 +79,7 @@ function mousePressed() {
 function draw() {
   
     background(0);
-    //background(floor(mycolor.x), floor(mycolor.y), floor(mycolor.z));
+    background(floor(mycolor.x), floor(mycolor.y), floor(mycolor.z));
     var m = 2;
     //image(img, -pos.x*img.width*m, -pos.y*img.height*m, img.width*m, img.height*m);
   
@@ -88,5 +97,5 @@ function draw() {
   stroke(255);
  strokeWeight(10);
 lngth = 1;
-  line(width/2, height/2, width/2+posDiff.x*lngth*10000, height/2+posDiff.y*lngth*10000);
+  //line(width/2, height/2, width/2+posDiff.x*lngth*10000, height/2+posDiff.y*lngth*10000);
 }

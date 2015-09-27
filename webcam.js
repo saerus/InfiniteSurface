@@ -90,6 +90,7 @@ function nextClient() {
     //print("BLINK: " + clientlist[currentClient]);
   } else {
   	state = 3;
+  	socket.emit('reset');
     //print("THIS IS DONE !");
   }
 }

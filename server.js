@@ -36,6 +36,7 @@ var server = app.listen(port, function() {
       		console.log("Send this: "+Object.keys(clientlist)+" to: "+socket.id);
         	io.sockets.connected[socket.id].emit('clientlist', Object.keys(clientlist));
       	}
+      	io.sockets.in("slave").emit('reset');
       	//var clientlist = io.sockets.clients("slave");
       }
     );
@@ -49,6 +50,12 @@ var server = app.listen(port, function() {
   		io.sockets.in('master').emit('nbr', clientsnbr);
     	console.log("Donne le nbr de clients: " +clientsnbr);
     	*/
+	  }
+	);
+	socket.on('reset',
+    	function(data) {
+    	console.log("RESET all");
+    	io.sockets.in("slave").emit('reset');
 	  }
 	);
     socket.on('blink',
@@ -77,7 +84,7 @@ var server = app.listen(port, function() {
 	);
 	socket.on('changecolor',
     	function(data) {
-    	console.log("Change Color: "+data.r+" "+data.g+" "+data.b);
+    	//console.log("Change Color: "+data.r+" "+data.g+" "+data.b);
     	io.sockets.connected[data.who].emit('changecolor', data);
 	  }
 	);
